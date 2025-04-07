@@ -10,3 +10,6 @@ def dashboard_view(request):
         return render(request, 'dashboard.html', {'user_id': user_id})  # Pass user_id to dashboard
     else:
         return render(request, 'login.html')  # Return login
+
+def landing_view(request):
+    return render(request, 'landing.html')  # Return landing page
