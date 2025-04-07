@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <title>Login | Qatar International</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Fonts -->
     <link
@@ -38,7 +39,7 @@
           <h1 class="card-title mb-0 r">Login</h1>
         </div>
 
-        <form method="post" action="{% url 'login' %}">
+        <form id="login-form">
           {% csrf_token %}
           <div class="card-body">
             <div class="mb-3">
@@ -92,6 +93,35 @@
           });
         }
       });
+  $(function () {
+    $('form').on('submit', function (e) {
+      e.preventDefault();
+
+      const email = $('#inputEmail').val();
+      const password = $('#inputPassword').val();
+
+      $.ajax({
+        url: '/auth/login/',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          email: email,
+          password: password
+        }),
+        success: function (response) {
+          if (response.success) {
+            window.location.href = response.redirect_url;
+          } else {
+            alert(response.message);
+          }
+        },
+        error: function (xhr, status, error) {
+          alert("Error: " + xhr.responseText);
+        }
+      });
+    });
+  });
+
     </script>
   </body>
 </html>

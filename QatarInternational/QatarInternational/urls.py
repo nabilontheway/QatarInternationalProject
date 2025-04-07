@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-# from myapp.views import login_view
+from myapp.views import dashboard_view
 from authapp.views import login_view
 
 
@@ -25,4 +25,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # path('login/', login_view, name='login'),
     path('auth/', include('authapp.urls')),
+    path('dashboard/', dashboard_view, name='dashboard'),
 ]
