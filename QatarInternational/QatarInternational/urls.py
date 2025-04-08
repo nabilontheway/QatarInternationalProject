@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-from myapp.views import dashboard_view, landing_view, add_notice  # Import the landing view from myapp.views
+from myapp.views import dashboard_view, landing_view, addnotice,allnotice  # Import the landing view from myapp.views
 from authapp.views import login_view
 
 
@@ -27,5 +27,6 @@ urlpatterns = [
     path('auth/', include('authapp.urls')),
     path('dashboard/', dashboard_view, name='dashboard'),
     path('landing/',landing_view, name='landing'), # Add this line to include the landing page view
-    path('add_notice',add_notice, name='add_notice'),
+    path('add_notice',addnotice, name='add_notice'),
+    path('all_notice',allnotice, name='all_notice'),
 ]

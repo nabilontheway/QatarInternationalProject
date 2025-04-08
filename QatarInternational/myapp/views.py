@@ -15,9 +15,12 @@ def landing_view(request):
     return render(request, 'landing.html')  # Return landing page
 
 
-def add_notice(request):
+def addnotice(request):
     if request.method == 'POST':
         notice = request.POST.get('notice')
         # Here you would typically save the notice to the database
         return render(request, 'add_notice.html', {'notice': notice})
     return render(request, 'add_notice.html')  # Return add notice page
+
+def allnotice(request):
+    return render(request, 'all_notice.html')  # Return all notices page

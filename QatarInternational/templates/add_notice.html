@@ -1,45 +1,56 @@
 {% include "partials/header.html" %}
 
 <main class="app-main">
-    <!--begin::App Content Header-->
-    <div class="app-content-header">
-      <!--begin::Container-->
-      <div class="container-fluid">
-        <!--begin::Row-->
-        <div class="row">
-          <div class="col-sm-6"><h3 class="mb-0">Dashboard</h3></div>
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-end">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-            </ol>
-          </div>
+  <!-- Content Header -->
+  <div class="app-content-header">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6"><h3 class="mb-0">Add Notice</h3></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-end">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Add Notice</li>
+          </ol>
         </div>
-        <!--end::Row-->
       </div>
-      <!--end::Container-->
     </div>
-    <!--end::App Content Header-->
-    <!--begin::App Content-->
-    <div class="app-content">
-      <!--begin::Container-->
-      <div class="container-fluid">
-        <!--begin::Row-->
-        <div class="row">
-            <!-- Start col -->
-            
-            <!-- /.Start col -->
-            <!-- Start col -->
-            
-            <!-- /.Start col -->
+  </div>
+
+  <!-- Main Content -->
+  <div class="app-content">
+    <div class="container-fluid">
+      <div class="card card-primary card-outline mb-4">
+        <div class="card-header">
+          <h5 class="card-title">Add New Notice</h5>
+        </div>
+        <form method="POST" action="{% url 'add_notice' %}">
+          {% csrf_token %}
+          <div class="card-body">
+            <!-- Notice Title -->
+            <div class="mb-3">
+              <label for="title" class="form-label">Notice Title</label>
+              <input type="text" name="title" class="form-control" id="title" required />
+            </div>
+
+            <!-- Notice Description -->
+            <div class="mb-3">
+              <label for="description" class="form-label">Notice Description</label>
+              <textarea name="description" class="form-control" id="description" rows="4" required></textarea>
+            </div>
+
+            <!-- Google Drive URL -->
+            <div class="mb-3">
+              <label for="pdf_url" class="form-label">PDF URL (Google Drive)</label>
+              <input type="url" name="pdf_url" class="form-control" id="pdf_url" placeholder="https://drive.google.com/..." required />
+            </div>
           </div>
-        <!-- /.row (main row) -->
+          <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Add Notice</button>
+          </div>
+        </form>
       </div>
-      <!--end::Container-->
     </div>
-    <!--end::App Content-->
-  </main>
+  </div>
+</main>
 
-
-    {% include "partials/footer.html" %}
-
+{% include "partials/footer.html" %}

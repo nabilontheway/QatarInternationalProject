@@ -1,0 +1,95 @@
+{% include "partials/header.html" %}
+
+<main class="app-main">
+    <!--begin::App Content Header-->
+    <div class="app-content-header">
+      <!--begin::Container-->
+      <div class="container-fluid">
+        <!--begin::Row-->
+        <div class="row">
+          <div class="col-sm-6"><h3 class="mb-0">Dashboard</h3></div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-end">
+              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+            </ol>
+          </div>
+        </div>
+        <!--end::Row-->
+      </div>
+      <!--end::Container-->
+    </div>
+    <!--end::App Content Header-->
+    <!--begin::App Content-->
+    <div class="app-content">
+      <!--begin::Container-->
+      <div class="container-fluid">
+        <!--begin::Row-->
+        <div class="row">
+            <!-- Start col -->
+            
+            <!-- /.Start col -->
+
+            <div class="card mb-4">
+                <div class="card-header"><h3 class="card-title">All Notices</h3></div>
+                <div class="card-body">
+                  <table class="table table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <th style="width: 5%">#</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th style="width: 15%">Date</th>
+                        <th style="width: 15%">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td>Exam Schedule Published</td>
+                        <td>The final term exam schedule for all departments is now available on the notice board.</td>
+                        <td>2025-04-06</td>
+                        <td>
+                          <a href="#" class="btn btn-sm btn-info">Edit</a>
+                          <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>Holiday Notice</td>
+                        <td>The campus will remain closed on April 14 due to Bengali New Year celebration.</td>
+                        <td>2025-04-05</td>
+                        <td>
+                          <a href="#" class="btn btn-sm btn-info">Edit</a>
+                          <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>3</td>
+                        <td>Classroom Shift</td>
+                        <td>All classes of Dept. of CSE will be shifted to Building B from next week.</td>
+                        <td>2025-04-03</td>
+                        <td>
+                          <a href="#" class="btn btn-sm btn-info">Edit</a>
+                          <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+            <!-- Start col -->
+            
+            <!-- /.Start col -->
+          </div>
+        <!-- /.row (main row) -->
+      </div>
+      <!--end::Container-->
+    </div>
+    <!--end::App Content-->
+  </main>
+
+
+    {% include "partials/footer.html" %}
+
