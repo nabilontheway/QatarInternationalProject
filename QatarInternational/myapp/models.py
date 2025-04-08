@@ -20,6 +20,7 @@ class Notice(models.Model):
     description = models.TextField()
     url = models.URLField(blank=True, null=True, help_text="Optional Google Drive link")
     created_at = models.DateTimeField(auto_now_add=True)
+    category = models.CharField(max_length=100, default="General")
 
     def __str__(self):
         return self.title

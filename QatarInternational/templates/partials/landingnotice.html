@@ -1,0 +1,57 @@
+<div class="container my-5">
+    <h2 class="text-center fw-bold">ALL NOTICES</h2>
+    <ul class="nav nav-tabs border-0 mb-3">
+      <li class="nav-item">
+        <a class="nav-link active" href="#"><i class="bi bi-card-text me-1"></i> Latest Notice</a>
+      </li>
+      <!-- <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-journal-text me-1"></i> Examination</a></li>
+      <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-pencil-square me-1"></i> Admissions</a></li>
+      <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-building me-1"></i> Office Order</a></li>
+      <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-megaphone me-1"></i> News/Press Release</a></li>
+      <li class="nav-item"><a class="nav-link" href="#"><i class="bi bi-calendar-event me-1"></i> Events</a></li> -->
+    </ul>
+  
+    <!-- Notice Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-primary text-center">
+          <tr>
+            <th scope="col">Notice</th>
+            <th scope="col">Description</th>
+            <th scope="col" style="width: 180px;">Publish Date</th>
+          </tr>
+        </thead>
+        <tbody id="noticeTableBody" class="text-start">
+          <!-- Dynamic rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch("/get-notices-json/")
+        .then((res) => res.json())
+        .then((data) => {
+          const tableBody = document.getElementById("noticeTableBody");
+          tableBody.innerHTML = "";
+  
+          data.notices.forEach((notice) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>
+                <span class="badge bg-danger text-white me-2">${notice.is_new ? 'New' : ''}</span>
+                ${notice.title}
+              </td>
+              <td>${notice.description}</td>
+              <td>${notice.date}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+        })
+        .catch((err) => {
+          console.error("Error fetching notices:", err);
+          alert("Failed to load notices.");
+        });
+    });
+  </script>
+    
