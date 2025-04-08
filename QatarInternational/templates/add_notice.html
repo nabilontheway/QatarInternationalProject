@@ -23,27 +23,36 @@
         <div class="card-header">
           <h5 class="card-title">Add New Notice</h5>
         </div>
-        <form method="POST" action="{% url 'add_notice' %}">
+
+        <!-- AJAX Form -->
+        <form id="noticeForm">
           {% csrf_token %}
           <div class="card-body">
             <!-- Notice Title -->
             <div class="mb-3">
               <label for="title" class="form-label">Notice Title</label>
-              <input type="text" name="title" class="form-control" id="title" required />
+              <input type="text" class="form-control" id="title" required />
             </div>
 
             <!-- Notice Description -->
             <div class="mb-3">
               <label for="description" class="form-label">Notice Description</label>
-              <textarea name="description" class="form-control" id="description" rows="4" required></textarea>
+              <textarea class="form-control" id="description" rows="4" required></textarea>
             </div>
 
             <!-- Google Drive URL -->
             <div class="mb-3">
-              <label for="pdf_url" class="form-label">PDF URL (Google Drive)</label>
-              <input type="url" name="pdf_url" class="form-control" id="pdf_url" placeholder="https://drive.google.com/..." required />
+              <label for="url" class="form-label">PDF URL (Google Drive)</label>
+              <input
+                type="url"
+                class="form-control"
+                id="url"
+                placeholder="https://drive.google.com/..."
+                
+              />
             </div>
           </div>
+
           <div class="card-footer">
             <button type="submit" class="btn btn-primary">Add Notice</button>
           </div>
@@ -52,5 +61,48 @@
     </div>
   </div>
 </main>
+
+<!-- AJAX Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("noticeForm");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const url = document.getElementById("url").value.trim();
+
+      if (!title || !description) {
+        alert("Title and description are required.");
+        return;
+      }
+
+      fetch("/add-notice-json/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+        },
+        body: JSON.stringify({
+          title: title,
+          description: description,
+          url: url,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          alert(data.message || "Notice added successfully!");
+          form.reset();
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Something went wrong while saving the notice.");
+        });
+    });
+  });
+</script>
+
 
 {% include "partials/footer.html" %}
