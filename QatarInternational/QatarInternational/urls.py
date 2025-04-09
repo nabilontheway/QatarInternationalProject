@@ -23,10 +23,11 @@ from authapp.views import login_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
     # path('login/', login_view, name='login'),
     path('auth/', include('authapp.urls')),
     path('dashboard/', dashboard_view, name='dashboard'),
-    path('landing/',landing_view, name='landing'), # Add this line to include the landing page view
+    path('',landing_view, name='landing'), # Add this line to include the landing page view
     path('add_notice',addnotice, name='add_notice'),
     path('all_notice',allnotice, name='all_notice'),
     path('add-notice-json/',add_notice_ajax, name='add_notice_json'),
