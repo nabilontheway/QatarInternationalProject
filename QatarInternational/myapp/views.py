@@ -14,9 +14,12 @@ def dashboard_view(request):
         return render(request, 'login.html')
 
 
-# Landing page
+#landing view
 def landing_view(request):
-    return render(request, 'landing.html')
+    latest_notice = Notice.objects.order_by('-created_at').first()  # Only the latest one
+    return render(request, 'landing.html', {
+        'notice': latest_notice
+    })
 
 
 # Show add notice page
@@ -57,6 +60,7 @@ def get_all_notices_json(request):
                 "id": notice.id,
                 "sl": i,
                 "title": notice.title,
+                "url": notice.url,
                 "description": notice.description,
                 "date": notice.created_at.strftime('%Y-%m-%d') if notice.created_at else "",  # update if using custom field
             })

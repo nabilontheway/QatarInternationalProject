@@ -76,11 +76,22 @@
    </nav>
   <!-- Admission Button -->
   <div class="text-end px-3 my-2">
-    <!-- <button class="btn admission-btn">Payment</button> -->
-     <marquee behavior="scroll" direction="left" class="bg-white text-red p-2 rounded-3">
-      <strong>Admission Open for 2024-25 Session</strong>
+    <marquee behavior="scroll" direction="left" class="bg-white text-danger p-2 rounded-3 shadow-sm">
+      <strong>
+        <span style="
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          background-color: red;
+          border-radius: 50%;
+          box-shadow: 0 0 8px red;
+          margin-right: 10px;
+        "></span>
+        {{ notice.title }}
+      </strong>
     </marquee>
   </div>
+  
 
 
 

@@ -17,7 +17,7 @@
         <thead class="table-primary text-center">
           <tr>
             <th scope="col">Notice</th>
-            <th scope="col">Description</th>
+            <th scope="col">PDF</th>
             <th scope="col" style="width: 180px;">Publish Date</th>
           </tr>
         </thead>
@@ -42,7 +42,9 @@
                 <span class="badge bg-danger text-white me-2">${notice.is_new ? 'New' : ''}</span>
                 ${notice.title}
               </td>
-              <td>${notice.description}</td>
+              <td>
+                <a href="${notice.url}" class="btn btn-primary btn-sm" target="_blank">View PDF</a>
+              </td>
               <td>${notice.date}</td>
             `;
             tableBody.appendChild(row);
