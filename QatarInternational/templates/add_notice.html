@@ -1,7 +1,6 @@
 {% include "partials/header.html" %}
 
 <main class="app-main">
-  <!-- Content Header -->
   <div class="app-content-header">
     <div class="container-fluid">
       <div class="row">
@@ -16,45 +15,32 @@
     </div>
   </div>
 
-  <!-- Main Content -->
   <div class="app-content">
     <div class="container-fluid">
       <div class="card card-primary card-outline mb-4">
-        <div class="card-header">
-          <h5 class="card-title">Add New Notice</h5>
-        </div>
+        <div class="card-header"><h5 class="card-title">Upload Notice</h5></div>
 
-        <!-- AJAX Form -->
-        <form id="noticeForm">
+        <form id="noticeForm" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="card-body">
-            <!-- Notice Title -->
             <div class="mb-3">
-              <label for="title" class="form-label">Notice Title</label>
-              <input type="text" class="form-control" id="title" required />
+              <label for="title" class="form-label">Title</label>
+              <input type="text" class="form-control" id="title" name="title" required />
             </div>
 
-            <!-- Notice Description -->
             <div class="mb-3">
-              <label for="description" class="form-label">Notice Description</label>
-              <textarea class="form-control" id="description" rows="4" required></textarea>
+              <label for="description" class="form-label">Description</label>
+              <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
             </div>
 
-            <!-- Google Drive URL -->
             <div class="mb-3">
-              <label for="url" class="form-label">PDF URL (Google Drive)</label>
-              <input
-                type="url"
-                class="form-control"
-                id="url"
-                placeholder="https://drive.google.com/..."
-                
-              />
+              <label for="pdf_file" class="form-label">Upload PDF</label>
+              <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept="application/pdf" required />
             </div>
           </div>
 
           <div class="card-footer">
-            <button type="submit" class="btn btn-primary">Add Notice</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
           </div>
         </form>
       </div>
@@ -62,47 +48,30 @@
   </div>
 </main>
 
-<!-- AJAX Script -->
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("noticeForm");
+  document.getElementById("noticeForm").addEventListener("submit", function (e) {
+    e.preventDefault();
 
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
 
-      const title = document.getElementById("title").value.trim();
-      const description = document.getElementById("description").value.trim();
-      const url = document.getElementById("url").value.trim();
-
-      if (!title || !description) {
-        alert("Title and description are required.");
-        return;
-      }
-
-      fetch("/add-notice-json/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
-        },
-        body: JSON.stringify({
-          title: title,
-          description: description,
-          url: url,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          alert(data.message || "Notice added successfully!");
-          form.reset();
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("Something went wrong while saving the notice.");
-        });
+    fetch("/upload-notice/", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+      },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message);
+      form.reset();
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Something went wrong.");
     });
   });
 </script>
-
 
 {% include "partials/footer.html" %}
