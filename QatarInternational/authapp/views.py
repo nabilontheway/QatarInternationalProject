@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.decorators.http import require_http_methods
 from myapp.models import Users
+from django.db import models
+
+
 
 
 @require_http_methods(["GET", "POST"])
@@ -13,19 +16,24 @@ def login_view(request):
         return render(request, "login.html")
 
     elif request.method == "POST":
-        email = request.POST.get("email")
+        identifier = request.POST.get("email")  # can be email or student ID
         password = request.POST.get("password")
 
-        user = Users.objects.filter(email=email, password=password, is_active=True).first()
+        # Try to match by email or student_id
+        user = Users.objects.filter(
+            is_active=True,
+        ).filter(
+            (models.Q(email=identifier) | models.Q(student_id=identifier)),
+            password=password
+        ).first()
 
         if user:
             request.session['user_id'] = user.id
-            request.session['username'] = user.username
             request.session['role'] = user.role
             return redirect('/dashboard/')
         else:
             return render(request, "login.html", {
-                "error": "Invalid email or password"
+                "error": "Invalid email/student ID or password"
             })
 
 

@@ -8,7 +8,6 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-
 # Dashboard view
 def dashboard_view(request):
     user_id = request.session.get('user_id')
@@ -132,3 +131,18 @@ def delete_notice(request, id):
 # Show all notices HTML page
 def allnotice(request):
     return render(request, 'all_notice.html')
+
+
+
+
+# student 
+def student_view(request):
+     return render(request, 'student_profile.html')
+
+
+# Profile settings page (same as dashboard for now)
+def profile_setting(request):
+    user_id = request.session.get('user_id')
+    if user_id:
+        return render(request, 'student_profile.html', {'user_id': user_id})
+    return render(request, 'login.html')
