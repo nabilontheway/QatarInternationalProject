@@ -13,6 +13,7 @@ from myapp.views import (
     profile_setting,
     add_student,
     upload_profile_picture,
+    student_dashboard_view,
 )
 
 urlpatterns = [
@@ -24,6 +25,7 @@ urlpatterns = [
     # Main pages
     path('', landing_view, name='landing'),
     path('dashboard/', dashboard_view, name='dashboard'),
+    path('student_dashboard/', student_dashboard_view, name='student_dashboard'),  # Same as dashboard for now
 
     # Notice management
     path('add_notice/', addnotice, name='add_notice'),  # Renders add_notice.html

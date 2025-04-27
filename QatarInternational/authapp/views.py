@@ -30,7 +30,10 @@ def login_view(request):
         if user:
             request.session['user_id'] = user.id
             request.session['role'] = user.role
-            return redirect('/dashboard/')
+            if user.role == 'student':
+                return redirect('/student_dashboard/')
+            else:
+                return redirect('/dashboard/')
         else:
             return render(request, "login.html", {
                 "error": "Invalid email/student ID or password"

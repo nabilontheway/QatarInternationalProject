@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 import cloudinary
 import cloudinary.uploader
+from cloudinary.uploader import destroy
 
 
 
@@ -23,6 +24,12 @@ def dashboard_view(request):
     if user_id:
         return render(request, 'dashboard.html', {'user_id': user_id})
     return render(request, 'login.html')
+
+def student_dashboard_view(request):
+    user_id = request.session.get('user_id')
+    if user_id:
+        return render(request, 'student_dashboard.html', {'user_id': user_id})
+    return render(request, 'login.html')    
 
 
 # Landing page with latest notice
@@ -210,6 +217,8 @@ cloudinary.config(
     api_secret = settings.CLOUDINARY_API_SECRET
 )
 
+
+
 @csrf_exempt
 def upload_profile_picture(request):
     user_id = request.session.get('user_id')
@@ -223,12 +232,21 @@ def upload_profile_picture(request):
             if not file:
                 return JsonResponse({"message": "No file uploaded."}, status=400)
 
-            # Upload to Cloudinary
+            # Retrieve the student's current profile picture URL and public ID
+            student = Student.objects.get(s_user__id=user_id)
+            old_pp_url = student.pp_url
+
+            if old_pp_url:
+                # Extract the public_id from the URL
+                public_id = old_pp_url.split("/")[-1].split(".")[0]
+                # Delete the old profile picture from Cloudinary
+                destroy(public_id)
+
+            # Upload the new picture to Cloudinary
             result = cloudinary.uploader.upload(file)
 
-            # Save URL
+            # Save the new picture's URL
             secure_url = result.get('secure_url')
-            student = Student.objects.get(s_user__id=user_id)
             student.pp_url = secure_url
             student.save()
 
