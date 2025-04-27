@@ -7,6 +7,15 @@ from django.conf import settings
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+import json
+from .models import Users, Student
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.views.decorators.http import require_http_methods
+import cloudinary
+import cloudinary.uploader
+
+
 
 # Dashboard view
 def dashboard_view(request):
@@ -133,16 +142,148 @@ def allnotice(request):
     return render(request, 'all_notice.html')
 
 
-
-
-# student 
+# Student
 def student_view(request):
-     return render(request, 'student_profile.html')
+    return render(request, 'student_profile.html')
 
 
-# Profile settings page (same as dashboard for now)
+
+@csrf_exempt
 def profile_setting(request):
+    if request.method == "GET":
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({"message": "Not logged in"}, status=401)
+
+        try:
+            student = Student.objects.get(s_user_id=user_id)
+            return render(request, 'student_profile.html', {"student": student})
+        except Student.DoesNotExist:
+            return JsonResponse({"message": "Student not found"}, status=404)
+
+    if request.method == "POST":
+        try:
+            user_id = request.session.get('user_id')
+            if not user_id:
+                return JsonResponse({"message": "Not logged in"}, status=401)
+
+            data = json.loads(request.body)
+
+            student = Student.objects.get(s_user_id=user_id)
+            user = Users.objects.get(id=user_id)
+
+          
+            if "s_name" in data:
+                student.s_name = data["s_name"]
+            if "present_address" in data:
+                student.present_address = data["present_address"]
+            if "permanent_address" in data:
+                student.permanent_address = data["permanent_address"]
+            if "father_name" in data:
+                student.father_name = data["father_name"]
+            if "father_number" in data:
+                student.father_number = data["father_number"]
+            if "mother_name" in data:
+                student.mother_name = data["mother_name"]
+            if "mother_number" in data:
+                student.mother_number = data["mother_number"]
+
+            if "password" in data and data["password"]:
+                user.password = data["password"]
+                user.save()
+
+            student.save()
+
+            return JsonResponse({"message": "Profile updated successfully!"}, status=200)
+
+        except Exception as e:
+            print("Error while updating profile:", e)
+            return JsonResponse({"message": "Something went wrong"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+
+cloudinary.config(
+    cloud_name = settings.CLOUDINARY_CLOUD_NAME,
+    api_key = settings.CLOUDINARY_API_KEY,
+    api_secret = settings.CLOUDINARY_API_SECRET
+)
+
+@csrf_exempt
+def upload_profile_picture(request):
     user_id = request.session.get('user_id')
-    if user_id:
-        return render(request, 'student_profile.html', {'user_id': user_id})
-    return render(request, 'login.html')
+
+    if not user_id:
+        return JsonResponse({"message": "Unauthorized"}, status=401)
+
+    if request.method == "POST":
+        try:
+            file = request.FILES.get("profile_pic")
+            if not file:
+                return JsonResponse({"message": "No file uploaded."}, status=400)
+
+            # Upload to Cloudinary
+            result = cloudinary.uploader.upload(file)
+
+            # Save URL
+            secure_url = result.get('secure_url')
+            student = Student.objects.get(s_user__id=user_id)
+            student.pp_url = secure_url
+            student.save()
+
+            return JsonResponse({"message": "Profile picture uploaded successfully.", "url": secure_url})
+
+        except Exception as e:
+            return JsonResponse({"message": str(e)}, status=500)
+
+    return JsonResponse({"message": "Invalid request method."}, status=405)
+
+
+
+@csrf_exempt
+def add_student(request):
+    if request.method == "GET":
+        return render(request, 'add_student.html')
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            s_roll = data.get("s_roll")
+            s_class = data.get("s_class")
+            password = data.get("password")
+
+            if not all([s_roll, s_class, password]):
+                return JsonResponse({"message": "All fields (roll, class, password) are required."}, status=400)
+
+            # First, create the User
+            user = Users.objects.create(
+                email=f"{s_roll}@example.com",  # You can change this later
+                username=f"student_{s_roll}",
+                password=password,              # (Note: Later use password hashing)
+                role="student",
+                student_id=s_roll
+            )
+
+            # Then, create the Student linked with the User
+            Student.objects.create(
+                s_user=user,
+                s_name="Default Name",
+                s_roll=s_roll,
+                s_class=s_class,
+                present_address="Default Present Address",
+                permanent_address="Default Permanent Address",
+                father_name="Default Father",
+                father_number="0000000000",
+                mother_name="Default Mother",
+                mother_number="0000000000",
+                pp_url="https://res.cloudinary.com/dee0zdpi9/image/upload/v1745640614/AdobeStock_1197779557_Preview_t7nhbj.jpg"
+            )
+
+            return JsonResponse({"message": "Student added successfully!"}, status=201)
+
+        except Exception as e:
+            return JsonResponse({"message": f"Failed to add student: {str(e)}"}, status=500)
+
+    return JsonResponse({"message": "Only POST method allowed."}, status=405)

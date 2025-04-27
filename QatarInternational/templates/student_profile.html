@@ -1,14 +1,19 @@
+<!-- Notification Bar -->
+<div id="notificationBar" class="alert alert-success alert-dismissible fade show" role="alert" style="position: fixed; top: 10px; right: 10px; z-index: 9999; display: none;">
+  <strong>Success!</strong> Your profile has been updated.
+</div>
+
 {% include "partials/header.html" %}
 
 <main class="app-main">
   <div class="app-content-header">
     <div class="container-fluid">
       <div class="row">
-        <div class="col-sm-6"><h3 class="mb-0">Dashboard</h3></div>
+        <div class="col-sm-6"><h3 class="mb-0">Edit Profile</h3></div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-end">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+            <li class="breadcrumb-item active">Edit Profile</li>
           </ol>
         </div>
       </div>
@@ -17,104 +22,193 @@
 
   <div class="app-content">
     <div class="container-fluid">
-      
       <div class="container">
         <div class="bg-white rounded shadow mt-3 p-3">
           <div class="row">
+            <!-- Profile Picture Section -->
             <div class="col-md-4 text-center p-3">
-              <img src="https://t4.ftcdn.net/jpg/11/97/77/95/360_F_1197779557_Biym5lftnpzmdV8J65xrRe8LgdTB5N9r.jpg" alt="Profile Picture" class="img-fluid rounded-circle mb-2" style="width: 159px; height: 150px; object-fit: cover;">
-              
-              <!-- Profile picture upload -->
+              <img id="profilePicPreview" src="{{ student.pp_url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-2" style="width: 159px; height: 150px; object-fit: cover;">
+
+              <!-- Upload New Image -->
               <div class="mt-3">
-                <label for="profilePic" class="form-label">Upload New Profile Picture</label>
-                <input type="file" class="form-control form-control-sm" id="profilePic" accept="image/*">
+                <input type="file" id="profilePic" class="form-control form-control-sm" accept="image/*">
               </div>
 
-              <div class="mt-2">
-                <h4>John Doe</h4>
-                <p class="text-muted mb-1" style="font-size: 0.9rem;">john_doe12@bbb.com</p>
-                <p class="text-muted mb-0" style="font-size: 0.9rem;">United States</p>
+              <div class="text-center mt-2">
+                <button id="uploadProfilePicBtn" class="btn  btn-sm" style="background-color: #a052c2;">Upload New Profile Picture</button>
               </div>
             </div>
 
+            <!-- Profile Details Form -->
             <div class="col-md-8 p-3" style="border-left: 1px solid #eee;">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <a href="#" class="text-muted"><i class="fas fa-arrow-left mr-2"></i>Back to home</a>
-                <h4>Edit Profile</h4>
-              </div>
-
-              <form>
-                <!-- Name, Class, Roll -->
+              <form id="profileForm" method="POST">
+                {% csrf_token %}
                 <div class="form-row">
                   <div class="form-group col-md-4">
-                    <label for="fullName">Full Name</label>
-                    <input type="text" class="form-control form-control-sm" id="fullName" value="John Doe">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control form-control-sm" id="s_name" value="{{ student.s_name }}">
                   </div>
                   <div class="form-group col-md-4">
-                    <label for="className">Class</label>
-                    <input type="text" class="form-control form-control-sm" id="className" value="10" disabled>
+                    <label>Class</label>
+                    <input type="text" class="form-control form-control-sm" id="s_class" value="{{ student.s_class }}" disabled>
                   </div>
                   <div class="form-group col-md-4">
-                    <label for="roll">Roll</label>
-                    <input type="text" class="form-control form-control-sm" id="roll" value="23" disabled>
+                    <label>Roll</label>
+                    <input type="text" class="form-control form-control-sm" id="s_roll" value="{{ student.s_roll }}" disabled>
                   </div>
                 </div>
 
-                <!-- Present and Permanent Address -->
                 <div class="form-row">
                   <div class="form-group col-md-6">
-                    <label for="presentAddress">Present Address</label>
-                    <input type="text" class="form-control form-control-sm" id="presentAddress" value="123 City Road, CA">
+                    <label>Present Address</label>
+                    <input type="text" class="form-control form-control-sm" id="present_address" value="{{ student.present_address }}">
                   </div>
                   <div class="form-group col-md-6">
-                    <label for="permanentAddress">Permanent Address</label>
-                    <input type="text" class="form-control form-control-sm" id="permanentAddress" value="456 Village, District">
+                    <label>Permanent Address</label>
+                    <input type="text" class="form-control form-control-sm" id="permanent_address" value="{{ student.permanent_address }}">
                   </div>
                 </div>
 
-                <!-- Father's Info -->
                 <div class="form-row">
                   <div class="form-group col-md-6">
-                    <label for="fatherName">Father's Name</label>
-                    <input type="text" class="form-control form-control-sm" id="fatherName" value="Mr. Abul Kalam">
+                    <label>Father's Name</label>
+                    <input type="text" class="form-control form-control-sm" id="father_name" value="{{ student.father_name }}">
                   </div>
                   <div class="form-group col-md-6">
-                    <label for="fatherNumber">Father's Number</label>
-                    <input type="text" class="form-control form-control-sm" id="fatherNumber" value="+8801234567890">
+                    <label>Father's Number</label>
+                    <input type="text" class="form-control form-control-sm" id="father_number" value="{{ student.father_number }}">
                   </div>
                 </div>
 
-                <!-- Mother's Info -->
                 <div class="form-row">
                   <div class="form-group col-md-6">
-                    <label for="motherName">Mother's Name</label>
-                    <input type="text" class="form-control form-control-sm" id="motherName" value="Mrs. Ayesha Siddika">
+                    <label>Mother's Name</label>
+                    <input type="text" class="form-control form-control-sm" id="mother_name" value="{{ student.mother_name }}">
                   </div>
                   <div class="form-group col-md-6">
-                    <label for="motherNumber">Mother's Number</label>
-                    <input type="text" class="form-control form-control-sm" id="motherNumber" value="+8809876543210">
+                    <label>Mother's Number</label>
+                    <input type="text" class="form-control form-control-sm" id="mother_number" value="{{ student.mother_number }}">
                   </div>
                 </div>
 
-                <!-- Password Field -->
                 <div class="form-group">
-                  <label for="password">Password</label>
+                  <label>New Password</label>
                   <input type="password" class="form-control form-control-sm" id="password" placeholder="Enter new password">
                 </div>
 
-                <!-- Save Button -->
-                <div class="text-right mt-3">
-                  <button type="submit" class="btn btn-primary btn-sm" style="background-color: #a052c2; border-color: #a052c2;">Save Profile</button>
+                <div class="text-end mt-3">
+                  <button type="submit" class="btn btn-primary btn-sm" style="background-color: #a052c2;">Save Profile</button>
                 </div>
               </form>
-
             </div>
+
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </main>
+
+<!-- AJAX Scripts -->
+<script>
+  function getCSRFToken() {
+    const token = document.querySelector('[name="csrfmiddlewaretoken"]');
+    return token ? token.value : "";
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("profileForm");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const data = {
+        s_name: document.getElementById("s_name").value.trim(),
+        present_address: document.getElementById("present_address").value.trim(),
+        permanent_address: document.getElementById("permanent_address").value.trim(),
+        father_name: document.getElementById("father_name").value.trim(),
+        father_number: document.getElementById("father_number").value.trim(),
+        mother_name: document.getElementById("mother_name").value.trim(),
+        mother_number: document.getElementById("mother_number").value.trim(),
+        password: document.getElementById("password").value.trim(),
+      };
+
+      const filteredData = {};
+      for (const key in data) {
+        if (data[key] !== "") {
+          filteredData[key] = data[key];
+        }
+      }
+
+      if (Object.keys(filteredData).length === 0) {
+        alert("Please fill at least one field to update.");
+        return;
+      }
+
+      fetch("/profile_setting", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken()
+        },
+        body: JSON.stringify(filteredData)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error("Failed to update.");
+        return response.json();
+      })
+      .then(data => {
+        showNotification(data.message || "Profile updated!");
+        // window.location.reload();
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        alert("Something went wrong.");
+      });
+    });
+
+    // Upload Profile Picture
+    document.getElementById("uploadProfilePicBtn").addEventListener("click", function () {
+      const fileInput = document.getElementById("profilePic");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Please select a profile picture.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("profile_pic", file);
+
+      fetch("/upload-profile-picture/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCSRFToken()
+        },
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        showNotification(data.message || "Profile picture updated!");
+        window.location.reload();
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Failed to upload profile picture.");
+      });
+    });
+  });
+
+  // Function to show the notification
+  function showNotification(message) {
+    const notificationBar = document.getElementById("notificationBar");
+    notificationBar.innerHTML = `<strong>Success!</strong> ${message} <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>`;
+    notificationBar.style.display = "block";
+
+    setTimeout(function () {
+      notificationBar.style.display = "none";
+    }, 3000); // Hide the notification after 3 seconds
+  }
+</script>
 
 {% include "partials/footer.html" %}

@@ -47,13 +47,29 @@
               </a>
               
             </li>
+           
+            
+
             <li class="nav-item">
-              <a href="./notice.html" class="nav-link">
-                
-                <i class="nav-icon bi bi-people-fill"></i>
-                <p>Manage Students</p>
+              <a href="#" class="nav-link">
+                <i class="nav-icon bi bi-bookmark-dash-fill"></i>
+                <p>
+                  Manage Students
+                  <i class="nav-arrow bi bi-chevron-right"></i>
+                </p>
               </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="{% url 'add_student' %}" class="nav-link">
+                    <i class="nav-icon bi bi-list-ul"></i>
+                    <p>Add Student</p>
+                  </a>
+                </li>
+          
+              </ul>
             </li>
+
+
 
             <li class="nav-item">
               <a href="#" class="nav-link">

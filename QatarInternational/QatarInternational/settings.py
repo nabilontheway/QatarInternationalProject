@@ -17,6 +17,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 GOOGLE_DRIVE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'QatarInternational', 'credentials', 'credentials.json')
 GOOGLE_DRIVE_FOLDER_ID = '1_HZ3ilkSX10iU_TyZlDhLA7Ip5f4ArM0'
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME = 'dee0zdpi9'
+CLOUDINARY_API_KEY = '638736125223735'
+CLOUDINARY_API_SECRET = '5F_BgPCJ1nq68ZcVip_e49LrMY0'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 

@@ -1,0 +1,86 @@
+{% include "partials/header.html" %}
+
+<main class="app-main">
+  <div class="app-content-header">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6"><h3 class="mb-0">Add Student</h3></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-end">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Add Student</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-content">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="bg-white rounded shadow mt-3 p-3">
+          <form id="addStudentForm">
+            {% csrf_token %}
+            <div class="row justify-content-center">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="roll" class="form-label">Roll</label>
+                  <input type="text" class="form-control" id="roll" required />
+                </div>
+
+                <div class="mb-3">
+                  <label for="className" class="form-label">Class</label>
+                  <input type="text" class="form-control" id="className" required />
+                </div>
+
+                <div class="mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <input type="password" class="form-control" id="password" required />
+                </div>
+
+                <div class="text-end mt-3">
+                  <button type="submit" class="btn btn-success btn-sm">Add Student</button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.getElementById("addStudentForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    const roll = document.getElementById("roll").value.trim();
+    const studentClass = document.getElementById("className").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    fetch("/add_student/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken
+      },
+      body: JSON.stringify({
+        s_roll: roll,
+        s_class: studentClass,
+        password: password
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        document.getElementById("addStudentForm").reset();
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Something went wrong while adding student.");
+      });
+  });
+</script>
+
+{% include "partials/footer.html" %}
