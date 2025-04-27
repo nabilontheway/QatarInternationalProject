@@ -48,7 +48,33 @@
   </div>
 </main>
 
+<!-- ✅ Notification bar for Success -->
+<div id="notificationBar" class="alert alert-success alert-dismissible fade show" role="alert" 
+     style="position: fixed; top: 20px; right: 20px; min-width: 300px; z-index: 9999; display: none;">
+  <strong>Success!</strong> Notice uploaded successfully.
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<!-- ✅ Notification bar for Error -->
+<div id="errorNotificationBar" class="alert alert-danger alert-dismissible fade show" role="alert" 
+     style="position: fixed; top: 20px; right: 20px; min-width: 300px; z-index: 9999; display: none;">
+  <strong>Error!</strong> Something went wrong while uploading.
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
 <script>
+  function getCSRFToken() {
+    return document.querySelector('[name="csrfmiddlewaretoken"]').value;
+  }
+
+  function showNotification(id) {
+    const notification = document.getElementById(id);
+    notification.style.display = "block";
+    setTimeout(() => {
+      notification.style.display = "none";
+    }, 3000);
+  }
+
   document.getElementById("noticeForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -58,18 +84,22 @@
     fetch("/upload-notice/", {
       method: "POST",
       headers: {
-        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+        "X-CSRFToken": getCSRFToken()
       },
       body: formData
     })
     .then(res => res.json())
     .then(data => {
-      alert(data.message);
-      form.reset();
+      if (data.message.includes("successfully")) {
+        showNotification('notificationBar');
+        form.reset();
+      } else {
+        showNotification('errorNotificationBar');
+      }
     })
     .catch(err => {
       console.error(err);
-      alert("Something went wrong.");
+      showNotification('errorNotificationBar');
     });
   });
 </script>

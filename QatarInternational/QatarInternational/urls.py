@@ -14,6 +14,8 @@ from myapp.views import (
     add_student,
     upload_profile_picture,
     student_dashboard_view,
+    all_students,
+    get_all_students_json,  
 )
 
 urlpatterns = [
@@ -37,6 +39,8 @@ urlpatterns = [
     path('delete-notice/<int:id>/', delete_notice, name='delete_notice'),
     path('get-notices-json/', get_all_notices_json, name='get_notices'),
     path('add_student/', add_student, name='add_student'),  # Renders add_student.html
+    path('get_all_students_json/', get_all_students_json, name='get_students'),  # Renders all_students.html
+    path('all_students/', all_students, name='all_students'),  # Renders all_students.html
 
     path('profile/', student_view, name='student_profile'),  # Profile page (same as dashboard for now)
     path('profile_setting',profile_setting, name='profile_setting'),  # Profile settings page (same as dashboard for now)
