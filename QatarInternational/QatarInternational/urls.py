@@ -15,7 +15,17 @@ from myapp.views import (
     upload_profile_picture,
     student_dashboard_view,
     all_students,
-    get_all_students_json,  
+    get_all_students_json,
+    add_payment,  
+    get_payment_history,
+    payments,
+    delete_student,
+    edit_student_view,
+    delete_payment,
+    edit_student,
+    delete_student,
+    upload_p_p,
+
 )
 
 urlpatterns = [
@@ -28,7 +38,7 @@ urlpatterns = [
     path('', landing_view, name='landing'),
     path('dashboard/', dashboard_view, name='dashboard'),
     path('student_dashboard/', student_dashboard_view, name='student_dashboard'),  # Same as dashboard for now
-
+     path('add_payment/', add_payment, name="add_payment"),
     # Notice management
     path('add_notice/', addnotice, name='add_notice'),  # Renders add_notice.html
     path('all_notice/', allnotice, name='all_notice'),  # Renders all_notice.html
@@ -41,6 +51,16 @@ urlpatterns = [
     path('add_student/', add_student, name='add_student'),  # Renders add_student.html
     path('get_all_students_json/', get_all_students_json, name='get_students'),  # Renders all_students.html
     path('all_students/', all_students, name='all_students'),  # Renders all_students.html
+    path('payment_history/', payments, name='payment_history'),  # Renders payment_history.html
+    path('get_payment_history/<str:roll>/',get_payment_history, name='get_payment_history'),
+    path('delete_payment/<int:payment_id>/',delete_payment, name='delete_payment'),  # Renders edit_student.html
+    path('delete_student/<int:id>/',delete_student, name='delete_student'),
+    path('edit_student/<int:id>/', edit_student_view, name='edit_student'),
+    path('edit_student/<int:id>/', edit_student, name='edit_student'),
+    path('delete_student/<int:id>/', delete_student, name='delete_student'),
+    path('upload_p_p/', upload_p_p, name='upload_profile_picture'),
+
+
 
     path('profile/', student_view, name='student_profile'),  # Profile page (same as dashboard for now)
     path('profile_setting',profile_setting, name='profile_setting'),  # Profile settings page (same as dashboard for now)

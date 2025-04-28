@@ -14,7 +14,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-from .models import Notice, Users, Student
+from .models import Notice, Users, Student, PaymentHistory
 
 # Cloudinary config
 cloudinary.config(
@@ -140,6 +140,45 @@ def delete_notice(request, id):
 
     return JsonResponse({"message": "Only DELETE allowed."}, status=405)
 
+
+@csrf_exempt
+def add_payment(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({"success": False, "message": "Unauthorized"}, status=401)
+    if request.method == "GET":
+        return render(request, 'add_payment.html', {'page_title': 'Add Payment'})
+
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            roll = data.get("roll")
+            amount = data.get("amount")
+            via = data.get("via")
+            payment_date = data.get("payment_date")  # 🌟
+
+            if not (roll and amount and via and payment_date):
+                return JsonResponse({"success": False, "message": "All fields are required."}, status=400)
+
+            student = Student.objects.filter(s_roll=roll).first()
+            if not student:
+                return JsonResponse({"success": False, "message": "Student not found."}, status=404)
+
+            PaymentHistory.objects.create(
+                user=student.s_user,
+                amount=amount,
+                via=via,
+                date=payment_date
+            )
+
+            return JsonResponse({"success": True, "message": "Payment added successfully!"})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "message": "Invalid method."}, status=405)
+
+
 def delete_file_from_drive(file_id):
     SCOPES = ['https://www.googleapis.com/auth/drive.file']
     SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, 'credentials.json')
@@ -157,6 +196,71 @@ def delete_file_from_drive(file_id):
 # Student profile
 def student_view(request):
     return render(request, 'student_profile.html', {'page_title': 'Student Profile'})
+
+@csrf_exempt
+def edit_student(request, id):
+    if request.method == "POST":
+        try:
+            student = Student.objects.get(id=id)
+            data = json.loads(request.body)
+
+            # Update fields only if they are provided
+            if 's_name' in data:
+                student.s_name = data['s_name']
+            if 'present_address' in data:
+                student.present_address = data['present_address']
+            if 'permanent_address' in data:
+                student.permanent_address = data['permanent_address']
+            if 'father_name' in data:
+                student.father_name = data['father_name']
+            if 'father_number' in data:
+                student.father_number = data['father_number']
+            if 'mother_name' in data:
+                student.mother_name = data['mother_name']
+            if 'mother_number' in data:
+                student.mother_number = data['mother_number']
+            if 'password' in data and data['password']:
+                student.password = data['password']  # (Hash it if you want)
+
+            student.save()
+            return JsonResponse({'success': True, 'message': 'Student updated successfully.'})
+
+        except Student.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Student not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
+
+@csrf_exempt
+def upload_p_p(request):
+    if request.method == "POST":
+        try:
+            student_id = request.POST.get('student_id')
+            student = Student.objects.get(id=student_id)
+
+            if 'profile_pic' in request.FILES:
+                profile_pic = request.FILES['profile_pic']
+
+                # Save file to media folder or handle Cloudinary if you use it
+                # Assuming you have MEDIA_URL and MEDIA_ROOT set properly
+                from django.core.files.storage import default_storage
+                filename = default_storage.save('profile_pics/' + profile_pic.name, profile_pic)
+                file_url = '/media/' + filename
+
+                student.pp_url = file_url
+                student.save()
+
+                return JsonResponse({'success': True, 'message': 'Profile picture uploaded.', 'url': file_url})
+            else:
+                return JsonResponse({'success': False, 'message': 'No profile picture uploaded.'})
+
+        except Student.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Student not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
 
 @csrf_exempt
 def profile_setting(request):
@@ -285,8 +389,6 @@ def all_students(request):
     return render(request, 'all_students.html', {'page_title': 'All Students'})
 
 
-from django.http import JsonResponse
-from .models import Student
 
 def get_all_students_json(request):
     if request.method == "GET":
@@ -314,4 +416,62 @@ def get_all_students_json(request):
     
     return JsonResponse({"error": "Only GET allowed"}, status=405)
 
+@csrf_exempt
+def delete_student(request, id):
+    if request.method == "DELETE":
+        try:
+            student = Student.objects.get(id=id)
+            user = student.s_user
+            student.delete()
+            user.delete()  # If you want to delete linked user too
+            return JsonResponse({"success": True, "message": "Student deleted successfully."}, status=200)
+        except Student.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Student not found."}, status=404)
+    return JsonResponse({"success": False, "message": "Only DELETE method allowed."}, status=405)
+
+
+
+def payments(request):
+    return render(request, 'payment_history.html', {'page_title': 'Payments'})
+
+@csrf_exempt
+def delete_payment(request, payment_id):
+    if request.method == "DELETE":
+        try:
+            payment = PaymentHistory.objects.get(id=payment_id)
+            payment.delete()
+            return JsonResponse({"success": True})
+        except PaymentHistory.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Payment not found."}, status=404)
+    return JsonResponse({"success": False, "message": "Invalid method."}, status=405)
+
+
+@csrf_exempt
+def get_payment_history(request, roll):
+    if request.method == "GET":
+        try:
+            student = Student.objects.get(s_roll=roll)
+            payments = PaymentHistory.objects.filter(user=student.s_user).order_by('-date')
+
+            data = [{
+                "id": p.id,
+                "amount": p.amount,
+                "via": p.via,
+                "date": p.date.strftime("%Y-%m-%d")
+            } for p in payments]
+
+            return JsonResponse({"payments": data}, status=200)
+        except Student.DoesNotExist:
+            return JsonResponse({"payments": []}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Only GET allowed."}, status=405)
+
+def edit_student_view(request, id):
+    try:
+        student = Student.objects.get(id=id)
+        return render(request, 'edit_student.html', {"student": student})
+    except Student.DoesNotExist:
+        return redirect('all_students')  # or your students list page
 

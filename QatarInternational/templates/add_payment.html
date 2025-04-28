@@ -1,0 +1,173 @@
+{% include "partials/header.html" %}
+
+<main class="app-main">
+  <div class="app-content-header">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-6"><h3 class="mb-0">Add Payment</h3></div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-end">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Add Payment</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="card mb-4">
+          <div class="card-header"><h3 class="card-title">Payment Entry</h3></div>
+          <div class="card-body">
+            <form id="paymentForm">
+              {% csrf_token %}
+              
+              <div class="mb-3">
+                <label for="studentRoll" class="form-label">Search Student Roll</label>
+                <input type="text" class="form-control" id="studentRollInput" placeholder="Type Roll..." autocomplete="off" required>
+                <!-- Suggestions -->
+                <ul class="list-group" id="suggestionsList" style="position: absolute; z-index: 1000; width: 90%; display: none;"></ul>
+              </div>
+
+              <div class="mb-3">
+                <label for="amount" class="form-label">Amount (৳)</label>
+                <input type="number" class="form-control" id="amount" min="0" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="via" class="form-label">Payment Via</label>
+                <select class="form-control" id="via" required>
+                  <option value="">-- Select Method --</option>
+                  <option value="bkash">bKash</option>
+                  <option value="on_hand">On Hand</option>
+                </select>
+              </div>
+
+              <!-- 🌟 NEW Date Field -->
+              <div class="mb-3">
+                <label for="paymentDate" class="form-label">Payment Date</label>
+                <input type="date" class="form-control" id="paymentDate" required>
+              </div>
+
+              <div class="text-end">
+                <button type="submit" class="btn btn-success">Save Payment</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Notification Bar -->
+<div id="notificationBar" class="alert alert-success alert-dismissible fade show" role="alert"
+     style="position: fixed; top: 20px; right: 20px; min-width: 300px; z-index: 9999; display: none;">
+  <strong>Success!</strong> Payment added successfully.
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<script>
+  let allStudents = [];
+
+  function showNotification() {
+    const notification = document.getElementById('notificationBar');
+    notification.style.display = "block";
+    setTimeout(() => {
+      notification.style.display = "none";
+      window.location.reload();
+    }, 3000);
+  }
+
+  function getCSRFToken() {
+    return document.querySelector('[name="csrfmiddlewaretoken"]').value;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const studentInput = document.getElementById("studentRollInput");
+    const suggestionsList = document.getElementById("suggestionsList");
+
+    fetch("/get_all_students_json")
+      .then(res => res.json())
+      .then(data => {
+        if (data.students) {
+          allStudents = data.students;
+        }
+      })
+      .catch(err => console.error("Failed to fetch students", err));
+
+    studentInput.addEventListener("input", function () {
+      const searchTerm = this.value.toLowerCase();
+      suggestionsList.innerHTML = "";
+
+      if (searchTerm.length === 0) {
+        suggestionsList.style.display = "none";
+        return;
+      }
+
+      const matchedStudents = allStudents.filter(student => 
+        student.s_roll.toLowerCase().includes(searchTerm)
+      );
+
+      matchedStudents.forEach(student => {
+        const li = document.createElement("li");
+        li.className = "list-group-item list-group-item-action";
+        li.textContent = `${student.s_roll} - ${student.s_name}`;
+        li.addEventListener("click", function () {
+          studentInput.value = student.s_roll;
+          suggestionsList.style.display = "none";
+        });
+        suggestionsList.appendChild(li);
+      });
+
+      suggestionsList.style.display = matchedStudents.length ? "block" : "none";
+    });
+
+    const form = document.getElementById("paymentForm");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const selectedRoll = document.getElementById("studentRollInput").value.trim();
+      const amount = document.getElementById("amount").value.trim();
+      const via = document.getElementById("via").value.trim();
+      const paymentDate = document.getElementById("paymentDate").value.trim(); // 🌟
+
+      if (!selectedRoll || !amount || !via || !paymentDate) {
+        alert("All fields are required!");
+        return;
+      }
+
+      const payload = {
+        roll: selectedRoll,
+        amount: amount,
+        via: via,
+        payment_date: paymentDate   // 🌟 Sending date
+      };
+
+      fetch("/add_payment/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken()
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showNotification();
+        } else {
+          alert(data.message || "Failed to add payment.");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Something went wrong.");
+      });
+    });
+  });
+</script>
+
+{% include "partials/footer.html" %}
