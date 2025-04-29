@@ -14,7 +14,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-from .models import Notice, Users, Student, PaymentHistory
+from .models import Notice, Users, Student, PaymentHistory,GalleryPic
 
 # Cloudinary config
 cloudinary.config(
@@ -41,7 +41,12 @@ def student_dashboard_view(request):
 # Landing
 def landing_view(request):
     latest_notice = Notice.objects.order_by('-created_at').first()
-    return render(request, 'landing.html', {'notice': latest_notice, 'page_title': 'Home'})
+    return render(request, 'landing.html', {'notice': latest_notice})
+
+def payment_view(request):
+    latest_notice = Notice.objects.order_by('-created_at').first()
+    return render(request, 'payment.html', {'notice': latest_notice, 'page_title': 'Payment'})
+
 
 # Add Notice Form
 def addnotice(request):
@@ -141,6 +146,21 @@ def delete_notice(request, id):
     return JsonResponse({"message": "Only DELETE allowed."}, status=405)
 
 
+def delete_file_from_drive(file_id):
+    SCOPES = ['https://www.googleapis.com/auth/drive.file']
+    SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, 'credentials.json')
+
+    credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES
+    )
+    service = build('drive', 'v3', credentials=credentials)
+
+    try:
+        service.files().delete(fileId=file_id).execute()  # Delete the file
+    except Exception as e:
+        raise Exception(f"Failed to delete file from Google Drive: {str(e)}")
+
+
 @csrf_exempt
 def add_payment(request):
     user_id = request.session.get('user_id')
@@ -178,89 +198,87 @@ def add_payment(request):
 
     return JsonResponse({"success": False, "message": "Invalid method."}, status=405)
 
-
-def delete_file_from_drive(file_id):
-    SCOPES = ['https://www.googleapis.com/auth/drive.file']
-    SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, 'credentials.json')
-
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES
-    )
-    service = build('drive', 'v3', credentials=credentials)
-
-    try:
-        service.files().delete(fileId=file_id).execute()  # Delete the file
-    except Exception as e:
-        raise Exception(f"Failed to delete file from Google Drive: {str(e)}")
-
 # Student profile
 def student_view(request):
     return render(request, 'student_profile.html', {'page_title': 'Student Profile'})
 
 @csrf_exempt
 def edit_student(request, id):
-    if request.method == "POST":
+    if request.method == "GET":
         try:
             student = Student.objects.get(id=id)
-            data = json.loads(request.body)
+            return render(request, 'edit_student.html', {"student": student, "page_title": "Edit Student"})
+        except Student.DoesNotExist:
+            return JsonResponse({"message": "Student not found"}, status=404)
 
-            # Update fields only if they are provided
-            if 's_name' in data:
-                student.s_name = data['s_name']
-            if 'present_address' in data:
-                student.present_address = data['present_address']
-            if 'permanent_address' in data:
-                student.permanent_address = data['permanent_address']
-            if 'father_name' in data:
-                student.father_name = data['father_name']
-            if 'father_number' in data:
-                student.father_number = data['father_number']
-            if 'mother_name' in data:
-                student.mother_name = data['mother_name']
-            if 'mother_number' in data:
-                student.mother_number = data['mother_number']
-            if 'password' in data and data['password']:
-                student.password = data['password']  # (Hash it if you want)
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            student = Student.objects.get(id=id)
+            user = student.s_user  # ForeignKey to Users
+
+            if "s_name" in data:
+                student.s_name = data["s_name"]
+            if "present_address" in data:
+                student.present_address = data["present_address"]
+            if "permanent_address" in data:
+                student.permanent_address = data["permanent_address"]
+            if "father_name" in data:
+                student.father_name = data["father_name"]
+            if "father_number" in data:
+                student.father_number = data["father_number"]
+            if "mother_name" in data:
+                student.mother_name = data["mother_name"]
+            if "mother_number" in data:
+                student.mother_number = data["mother_number"]
+            if "password" in data and data["password"]:
+                user.password = data["password"]
+                user.save()
 
             student.save()
-            return JsonResponse({'success': True, 'message': 'Student updated successfully.'})
 
-        except Student.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Student not found.'}, status=404)
+            return JsonResponse({"message": "Student updated successfully!"}, status=200)
+
         except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+            return JsonResponse({"message": f"Something went wrong: {str(e)}"}, status=500)
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def upload_p_p(request):
     if request.method == "POST":
         try:
             student_id = request.POST.get('student_id')
+            if not student_id:
+                return JsonResponse({"message": "No student ID provided."}, status=400)
+
+            file = request.FILES.get("profile_pic")
+            if not file:
+                return JsonResponse({"message": "No file uploaded."}, status=400)
+
             student = Student.objects.get(id=student_id)
+            old_pp_url = student.pp_url
 
-            if 'profile_pic' in request.FILES:
-                profile_pic = request.FILES['profile_pic']
+            if old_pp_url:
+                public_id = old_pp_url.split("/")[-1].split(".")[0]
+                destroy(public_id)  # Optional: remove old image from Cloudinary
 
-                # Save file to media folder or handle Cloudinary if you use it
-                # Assuming you have MEDIA_URL and MEDIA_ROOT set properly
-                from django.core.files.storage import default_storage
-                filename = default_storage.save('profile_pics/' + profile_pic.name, profile_pic)
-                file_url = '/media/' + filename
+            result = cloudinary.uploader.upload(file)
+            secure_url = result.get('secure_url')
 
-                student.pp_url = file_url
-                student.save()
+            student.pp_url = secure_url
+            student.save()
 
-                return JsonResponse({'success': True, 'message': 'Profile picture uploaded.', 'url': file_url})
-            else:
-                return JsonResponse({'success': False, 'message': 'No profile picture uploaded.'})
+            return JsonResponse({"success": True, "message": "Profile picture uploaded successfully.", "url": secure_url})
 
         except Student.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Student not found.'}, status=404)
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+            return JsonResponse({"message": "Student not found."}, status=404)
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
+        except Exception as e:
+            return JsonResponse({"message": str(e)}, status=500)
+
+    return JsonResponse({"message": "Invalid request method."}, status=405)
+
 
 @csrf_exempt
 def profile_setting(request):
@@ -389,7 +407,6 @@ def all_students(request):
     return render(request, 'all_students.html', {'page_title': 'All Students'})
 
 
-
 def get_all_students_json(request):
     if request.method == "GET":
         student_id = request.GET.get('id', None)  # Get 'id' from query parameters
@@ -430,9 +447,8 @@ def delete_student(request, id):
     return JsonResponse({"success": False, "message": "Only DELETE method allowed."}, status=405)
 
 
-
 def payments(request):
-    return render(request, 'payment_history.html', {'page_title': 'Payments'})
+    return render(request, 'payment.html', {'page_title': 'Payments'})
 
 @csrf_exempt
 def delete_payment(request, payment_id):
@@ -468,10 +484,46 @@ def get_payment_history(request, roll):
 
     return JsonResponse({"error": "Only GET allowed."}, status=405)
 
-def edit_student_view(request, id):
-    try:
-        student = Student.objects.get(id=id)
-        return render(request, 'edit_student.html', {"student": student})
-    except Student.DoesNotExist:
-        return redirect('all_students')  # or your students list page
+@csrf_exempt
+def upload_image(request):
+    if request.method == "GET":
+        return render(request, 'upload_image.html', {'page_title': 'Upload Image'})
 
+    if request.method == "POST":
+        try:
+            image_file = request.FILES.get("image")
+            if not image_file:
+                return JsonResponse({"message": "No image provided."}, status=400)
+
+            result = upload(image_file)
+            url = result.get("secure_url")
+
+            pic = GalleryPic(pic_url=url)
+            pic.save()
+
+            return JsonResponse({"message": "Image uploaded successfully.", "url": url})
+        except Exception as e:
+            return JsonResponse({"message": f"Error: {str(e)}"}, status=500)
+
+    return JsonResponse({"message": "Invalid request method."}, status=405)
+
+def get_all_images(request):
+    images = list(GalleryPic.objects.values("id", "pic_url"))
+    return JsonResponse({"images": images})
+
+@csrf_exempt
+def delete_image(request, id):
+    if request.method == "DELETE":
+        try:
+            pic = GalleryPic.objects.get(id=id)
+            public_id = pic.pic_url.split("/")[-1].split(".")[0]
+            destroy(public_id)
+            pic.delete()
+            return JsonResponse({"message": "Image deleted."})
+        except GalleryPic.DoesNotExist:
+            return JsonResponse({"message": "Image not found."}, status=404)
+    return JsonResponse({"message": "Invalid request method."}, status=405)
+
+
+
+ 

@@ -1,0 +1,95 @@
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+  <div class="w-100">
+    <h2 class="text-center mb-4">Gallery</h2>
+
+    <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="2000">
+      <div class="carousel-inner" id="carouselItems">
+        <!-- Slides injected dynamically -->
+      </div>
+
+      <!-- Arrows -->
+      <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" style="filter: invert(1);" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" style="filter: invert(1);" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Styling for cards -->
+<style>
+  .carousel-inner .carousel-item {
+    padding: 0 40px;
+  }
+
+  .carousel-inner .carousel-item .card {
+    border: none;
+    box-shadow: 0 4px 16px #B8E1FA;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .carousel-inner .carousel-item img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+  }
+</style>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/get_all_images/")
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById("carouselItems");
+        container.innerHTML = "";
+
+        if (data.images && data.images.length > 0) {
+          for (let i = 0; i < data.images.length; i += 2) {
+            const item = document.createElement("div");
+            item.className = "carousel-item" + (i === 0 ? " active" : "");
+
+            const row = document.createElement("div");
+            row.className = "row justify-content-center";
+
+            for (let j = 0; j < 2; j++) {
+              if (i + j < data.images.length) {
+                const col = document.createElement("div");
+                col.className = "col-md-6";
+
+                const card = document.createElement("div");
+                card.className = "card mb-3";
+
+                const img = document.createElement("img");
+                img.src = data.images[i + j].pic_url;
+                img.className = "card-img-top";
+                img.alt = "Image";
+
+                card.appendChild(img);
+                col.appendChild(card);
+                row.appendChild(col);
+              }
+            }
+
+            item.appendChild(row);
+            container.appendChild(item);
+          }
+        } else {
+          container.innerHTML = `<div class="carousel-item active"><p class="text-center">No images found.</p></div>`;
+        }
+      })
+      .catch(err => {
+        console.error("Error loading images:", err);
+      });
+  });
+</script>

@@ -5,7 +5,6 @@ from myapp.views import (
     landing_view,
     addnotice,
     allnotice,
-    # add_notice_ajax,
     delete_notice,
     get_all_notices_json,
     upload_notice,  # If you are uploading to Google Drive
@@ -16,16 +15,18 @@ from myapp.views import (
     student_dashboard_view,
     all_students,
     get_all_students_json,
-    add_payment,  
+    add_payment,
+    payments, 
     get_payment_history,
-    payments,
     delete_student,
-    edit_student_view,
     delete_payment,
     edit_student,
     delete_student,
     upload_p_p,
-
+    get_all_images,
+    delete_image,
+    upload_image, 
+    payment_view,
 )
 
 urlpatterns = [
@@ -43,8 +44,6 @@ urlpatterns = [
     path('add_notice/', addnotice, name='add_notice'),  # Renders add_notice.html
     path('all_notice/', allnotice, name='all_notice'),  # Renders all_notice.html
 
-    # AJAX and API
-    # path('add-notice-json/', add_notice_ajax, name='add_notice_json'),  # JSON-based add
     path('upload-notice/', upload_notice, name='upload_notice'),        # File upload to Drive
     path('delete-notice/<int:id>/', delete_notice, name='delete_notice'),
     path('get-notices-json/', get_all_notices_json, name='get_notices'),
@@ -55,15 +54,19 @@ urlpatterns = [
     path('get_payment_history/<str:roll>/',get_payment_history, name='get_payment_history'),
     path('delete_payment/<int:payment_id>/',delete_payment, name='delete_payment'),  # Renders edit_student.html
     path('delete_student/<int:id>/',delete_student, name='delete_student'),
-    path('edit_student/<int:id>/', edit_student_view, name='edit_student'),
     path('edit_student/<int:id>/', edit_student, name='edit_student'),
     path('delete_student/<int:id>/', delete_student, name='delete_student'),
     path('upload_p_p/', upload_p_p, name='upload_profile_picture'),
 
+
+    path('upload_image/', upload_image, name="upload_image"),
+    path('get_all_images/', get_all_images, name="get_all_images"),
+    path('delete_image/<int:id>/', delete_image, name="delete_image"),
 
 
     path('profile/', student_view, name='student_profile'),  # Profile page (same as dashboard for now)
     path('profile_setting',profile_setting, name='profile_setting'),  # Profile settings page (same as dashboard for now)
     path('upload-profile-picture/', upload_profile_picture, name='upload_profile_picture'),
 
+    path('payment/', payment_view, name='payment'),  # Renders payment_history.html
 ]

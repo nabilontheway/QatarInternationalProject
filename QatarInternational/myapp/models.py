@@ -58,3 +58,10 @@ class PaymentHistory(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.amount} via {self.via}"
+
+
+class GalleryPic(models.Model):
+    pic_url = models.URLField(max_length=500)
+
+    def __str__(self):
+        return self.pic_url
