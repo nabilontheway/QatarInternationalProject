@@ -27,6 +27,8 @@ from myapp.views import (
     delete_image,
     upload_image, 
     payment_view,
+    public_notice,
+    public_gallery,
 )
 
 urlpatterns = [
@@ -43,7 +45,7 @@ urlpatterns = [
     # Notice management
     path('add_notice/', addnotice, name='add_notice'),  # Renders add_notice.html
     path('all_notice/', allnotice, name='all_notice'),  # Renders all_notice.html
-
+    path('public_notice/', public_notice, name='public_notice'),  # Renders all_notice.html
     path('upload-notice/', upload_notice, name='upload_notice'),        # File upload to Drive
     path('delete-notice/<int:id>/', delete_notice, name='delete_notice'),
     path('get-notices-json/', get_all_notices_json, name='get_notices'),
@@ -57,7 +59,7 @@ urlpatterns = [
     path('edit_student/<int:id>/', edit_student, name='edit_student'),
     path('delete_student/<int:id>/', delete_student, name='delete_student'),
     path('upload_p_p/', upload_p_p, name='upload_profile_picture'),
-
+    path('public_gallery',public_gallery,name='public_gallery'),
 
     path('upload_image/', upload_image, name="upload_image"),
     path('get_all_images/', get_all_images, name="get_all_images"),

@@ -50,7 +50,15 @@ def payment_view(request):
 
 # Add Notice Form
 def addnotice(request):
-    return render(request, 'add_notice.html', {'page_title': 'Add Notice'})
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return render(request, 'login.html', {'message': 'Please log in to add a notice.'})
+
+    user = Users.objects.filter(id=user_id).first()
+    if user and user.role == "admin":
+        return render(request, 'add_notice.html', {'page_title': 'Add Notice'})
+
+    return render(request, 'login.html', {'message': 'Unauthorized access. Admins only.'})
 
 # Upload Notice (PDF upload to Drive)
 @csrf_exempt
@@ -108,7 +116,15 @@ def upload_pdf_to_drive(pdf_file, temp_path):
 
 # All notices
 def allnotice(request):
-    return render(request, 'all_notice.html', {'page_title': 'All Notices'})
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return render(request, 'login.html', {'message': 'Please log in to view notices.'})
+
+    user = Users.objects.filter(id=user_id).first()
+    if user and user.role == "admin":
+        return render(request, 'all_notice.html', {'page_title': 'All Notices'})
+
+    return render(request, 'login.html', {'message': 'Unauthorized access. Admins only.'})
 
 def get_all_notices_json(request):
     if request.method == "GET":
@@ -144,6 +160,15 @@ def delete_notice(request, id):
             return JsonResponse({"message": f"An error occurred: {str(e)}"}, status=500)
 
     return JsonResponse({"message": "Only DELETE allowed."}, status=405)
+
+
+def public_notice(request):
+    latest_notice = Notice.objects.order_by('-created_at').first()
+    return render(request, 'public_notice.html', {'notice': latest_notice, 'page_title': 'Public Notice'})
+
+def public_gallery(request):
+    latest_notice = Notice.objects.order_by('-created_at').first()
+    return render(request, 'public_gallery.html', {'notice': latest_notice, 'page_title': 'Public Gallery'})
 
 
 def delete_file_from_drive(file_id):
@@ -200,7 +225,15 @@ def add_payment(request):
 
 # Student profile
 def student_view(request):
-    return render(request, 'student_profile.html', {'page_title': 'Student Profile'})
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return render(request, 'login.html', {'message': 'Please log in to view your profile.'})
+
+    user = Users.objects.filter(id=user_id).first()
+    if user and user.role == "student":
+        return render(request, 'student_profile.html', {'page_title': 'Student Profile'})
+
+    return render(request, 'login.html', {'message': 'Unauthorized access. Students only.'})
 
 @csrf_exempt
 def edit_student(request, id):
@@ -360,6 +393,14 @@ def upload_profile_picture(request):
 
 @csrf_exempt
 def add_student(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({"message": "Unauthorized"}, status=401)
+
+    user = Users.objects.filter(id=user_id).first()
+    if not user or user.role != "admin":
+        return JsonResponse({"message": "Forbidden: Admins only."}, status=403)
+
     if request.method == "GET":
         return render(request, 'add_student.html', {'page_title': 'Add Student'})
 
@@ -402,18 +443,32 @@ def add_student(request):
 
     return JsonResponse({"message": "Only POST method allowed."}, status=405)
 
-
 def all_students(request):
-    return render(request, 'all_students.html', {'page_title': 'All Students'})
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return render(request, 'login.html', {'message': 'Please log in to view all students.'})
+
+    user = Users.objects.filter(id=user_id).first()
+    if user and user.role == "admin":
+        return render(request, 'all_students.html', {'page_title': 'All Students'})
+
+    return render(request, 'login.html', {'message': 'Unauthorized access. Admins only.'})
 
 
 def get_all_students_json(request):
     if request.method == "GET":
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({"error": "Unauthorized"}, status=401)
+
+        user = Users.objects.filter(id=user_id).first()
+        if not user or user.role != "admin":
+            return JsonResponse({"error": "Forbidden: Admins only."}, status=403)
+
         student_id = request.GET.get('id', None)  # Get 'id' from query parameters
         
         if student_id:
-            # # Filter students by the provided ID
-            # students = Student.objects.filter(id=student_id).order_by('-id')
+            # Filter students by the provided ID
             students = Student.objects.filter(s_roll=student_id).order_by('-s_roll')
         else:
             # Return all students if no ID filter is provided
@@ -448,7 +503,15 @@ def delete_student(request, id):
 
 
 def payments(request):
-    return render(request, 'payment.html', {'page_title': 'Payments'})
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return render(request, 'login.html', {'message': 'Please log in to view payment history.'})
+
+    user = Users.objects.filter(id=user_id).first()
+    if user and user.role == "admin":
+        return render(request, 'payment_history.html', {'page_title': 'Payments'})
+
+    return render(request, 'login.html', {'message': 'Unauthorized access. Admins only.'})
 
 @csrf_exempt
 def delete_payment(request, payment_id):

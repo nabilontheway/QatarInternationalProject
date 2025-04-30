@@ -1,0 +1,79 @@
+<!-- Bootstrap CSS -->
+{% load static %}
+{% include 'partials/landing_head.html' %}
+
+{% include "partials/landing_nav.html" %}
+
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<div class="container py-5">
+  <h2 class="text-center mb-4">Gallery</h2>
+  <div class="row" id="imageGrid">
+    <!-- Images will be inserted here -->
+  </div>
+</div>
+
+<!-- Style for hover shadow -->
+<style>
+  .gallery-card {
+    border: none;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    border-radius: 10px;
+  }
+
+  .gallery-card:hover {
+    box-shadow: 0 0 20px #B8E1FA;
+  }
+
+  .gallery-card img {
+    height: 250px;
+    object-fit: cover;
+    width: 100%;
+    border-radius: 10px;
+  }
+</style>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS to fetch and show images -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/get_all_images/")
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById("imageGrid");
+        container.innerHTML = "";
+
+        if (data.images && data.images.length > 0) {
+          data.images.forEach((image) => {
+            const col = document.createElement("div");
+            col.className = "col-md-3 col-sm-6 mb-4";
+
+            const card = document.createElement("div");
+            card.className = "gallery-card";
+
+            const img = document.createElement("img");
+            img.src = image.pic_url;
+            img.alt = "Gallery Image";
+
+            card.appendChild(img);
+            col.appendChild(card);
+            container.appendChild(col);
+          });
+        } else {
+          container.innerHTML = `<p class="text-center">No images found.</p>`;
+        }
+      })
+      .catch(err => {
+        console.error("Error loading images:", err);
+      });
+  });
+</script>
+
+
+<!-- Footer -->
+{% include 'partials/landing_footer.html' %}

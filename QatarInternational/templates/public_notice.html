@@ -1,0 +1,107 @@
+{% load static %}
+{% include 'partials/landing_head.html' %}
+
+{% include "partials/landing_nav.html" %}
+
+
+
+
+<div class="container my-5">
+    <h2 class="fw-light text-center mt-4 mb-0">ALL NOTICES</h2>
+    <ul class="nav nav-tabs border-0 mb-3">
+      <li class="nav-item">
+        <a class="nav-link active" href="#"><i class="bi bi-card-text me-1"></i> Latest Notice</a>
+      </li>
+    </ul>
+  
+    <!-- Notice Table -->
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead class="table-primary text-center">
+          <tr>
+            <th scope="col">Notice</th>
+            <th scope="col">PDF</th>
+            <th scope="col" style="width: 180px;">Publish Date</th>
+          </tr>
+        </thead>
+        <tbody id="noticeTableBody" class="text-start">
+          <!-- Dynamic rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- Pagination Controls -->
+    <div class="d-flex justify-content-center mt-3">
+      <button class="btn btn-secondary btn-sm me-2" id="prevPageBtn">Previous</button>
+      <button class="btn btn-secondary btn-sm" id="nextPageBtn">Next</button>
+    </div>
+  </div>
+  
+  <script>
+  let notices = [];
+  let currentPage = 1;
+  const noticesPerPage = 10;
+  
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/get-notices-json/")
+      .then((res) => res.json())
+      .then((data) => {
+        notices = data.notices || [];
+        renderTable();
+      })
+      .catch((err) => {
+        console.error("Error fetching notices:", err);
+        alert("Failed to load notices.");
+      });
+  
+    document.getElementById("prevPageBtn").addEventListener("click", function () {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    });
+  
+    document.getElementById("nextPageBtn").addEventListener("click", function () {
+      if (currentPage < Math.ceil(notices.length / noticesPerPage)) {
+        currentPage++;
+        renderTable();
+      }
+    });
+  });
+  
+  function renderTable() {
+    const tableBody = document.getElementById("noticeTableBody");
+    tableBody.innerHTML = "";
+  
+    const startIndex = (currentPage - 1) * noticesPerPage;
+    const endIndex = startIndex + noticesPerPage;
+    const paginatedNotices = notices.slice(startIndex, endIndex);
+  
+    paginatedNotices.forEach((notice) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>
+          <span class="badge bg-danger text-white me-2">${notice.is_new ? 'New' : ''}</span>
+          ${notice.title}
+        </td>
+        <td>
+          ${notice.url ? `<a href="${notice.url}" target="_blank" style="font-size: 1.5rem;"><i class="bi bi-arrow-down-circle"></i></a>` : '<span style="font-size: 1.5rem;">No File</span>'}
+         
+        </td>
+        <td>${notice.date}</td>
+      `;
+      tableBody.appendChild(row);
+    });
+  
+    updateButtonState();
+  }
+  
+  function updateButtonState() {
+    document.getElementById("prevPageBtn").disabled = currentPage === 1;
+    document.getElementById("nextPageBtn").disabled = currentPage === Math.ceil(notices.length / noticesPerPage);
+  }
+  </script>
+  
+
+{% include "partials/landing_footer.html" %}
+
