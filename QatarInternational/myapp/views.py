@@ -13,6 +13,7 @@ from cloudinary.uploader import destroy
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from django.shortcuts import redirect
 
 from .models import Notice, Users, Student, PaymentHistory,GalleryPic
 
@@ -28,22 +29,36 @@ cloudinary.config(
 # Dashboard
 def dashboard_view(request):
     user_id = request.session.get('user_id')
-    if user_id:
+    if user_id and request.session.get('role') == 'admin':
         return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})
+    elif user_id and request.session.get('role') == 'student':
+        return redirect('/student_dashboard/')    
     return render(request, 'login.html')
 
 def student_dashboard_view(request):
     user_id = request.session.get('user_id')
-    if user_id:
-        return render(request, 'student_dashboard.html', {'user_id': user_id, 'page_title': 'Student Dashboard'})
+    if user_id and request.session.get('role') == 'admin':
+        return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})
+    elif user_id and request.session.get('role') == 'student':
+        return redirect('/student_dashboard/')
     return render(request, 'login.html')
 
 # Landing
 def landing_view(request):
+    user_id = request.session.get('user_id')
+    if user_id and request.session.get('role') == 'admin':
+        return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})
+    elif user_id and request.session.get('role') == 'student':
+        return redirect('/student_dashboard/')
     latest_notice = Notice.objects.order_by('-created_at').first()
     return render(request, 'landing.html', {'notice': latest_notice})
 
 def payment_view(request):
+    user_id = request.session.get('user_id')
+    if user_id and request.session.get('role') == 'admin':
+        return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})
+    elif user_id and request.session.get('role') == 'student':
+        return redirect('/student_dashboard/')
     latest_notice = Notice.objects.order_by('-created_at').first()
     return render(request, 'payment.html', {'notice': latest_notice, 'page_title': 'Payment'})
 
