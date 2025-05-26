@@ -9,7 +9,11 @@ from django.db import models
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     if request.session.get('user_id'):
-        return redirect('/dashboard/')
+        role = request.session.get('role')
+        if role == 'student':
+            return redirect('/student_dashboard/')
+        else:
+            return redirect('/dashboard/')
 
     if request.method == "GET":
         return render(request, "login.html")

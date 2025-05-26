@@ -30,17 +30,13 @@ cloudinary.config(
 def dashboard_view(request):
     user_id = request.session.get('user_id')
     if user_id and request.session.get('role') == 'admin':
-        return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})
-    elif user_id and request.session.get('role') == 'student':
-        return redirect('/student_dashboard/')    
+        return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})    
     return render(request, 'login.html')
 
 def student_dashboard_view(request):
     user_id = request.session.get('user_id')
-    if user_id and request.session.get('role') == 'admin':
-        return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})
-    elif user_id and request.session.get('role') == 'student':
-        return redirect('/student_dashboard/')
+    if user_id and request.session.get('role') == 'student':
+         return render(request, 'student_dashboard.html', {'user_id': user_id, 'page_title': 'student_dashboard'})    
     return render(request, 'login.html')
 
 # Landing
