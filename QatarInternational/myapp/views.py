@@ -59,14 +59,26 @@ def landing_view(request):
     latest_notice = Notice.objects.order_by('-created_at').first()
     return render(request, 'landing.html', {'notice': latest_notice})
 
+from django.shortcuts import render, redirect
+from .models import Notice
+
 def payment_view(request):
     user_id = request.session.get('user_id')
-    if user_id and request.session.get('role') == 'admin':
-        return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})
-    elif user_id and request.session.get('role') == 'student':
-        return redirect('/student_dashboard/')
-    latest_notice = Notice.objects.order_by('-created_at').first()
-    return render(request, 'payment.html', {'notice': latest_notice, 'page_title': 'Payment'})
+    role = request.session.get('role')
+
+    # Redirect based on role
+    if user_id:
+        if role == 'admin':
+            return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})
+        elif role == 'student':
+            return redirect('/student_dashboard/')
+
+    # For public users (not logged in)
+    accounts = AccountNumber.objects.all()
+    return render(request, 'payment.html', {
+        'page_title': 'Payment',
+        'accounts': accounts
+    })
 
 
 # Add Notice Form

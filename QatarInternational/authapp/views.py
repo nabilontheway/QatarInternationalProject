@@ -60,4 +60,4 @@ def login_view(request):
                 })
 def logout_view(request):
     request.session.flush()
-    return redirect('/auth/login/')
+    return redirect('/')
