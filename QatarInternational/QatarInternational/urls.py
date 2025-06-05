@@ -29,6 +29,10 @@ from myapp.views import (
     payment_view,
     public_notice,
     public_gallery,
+    add_or_update_account,
+    delete_account,
+    get_all_accounts,
+    add_payment_account
 )
 
 urlpatterns = [
@@ -71,4 +75,9 @@ urlpatterns = [
     path('upload-profile-picture/', upload_profile_picture, name='upload_profile_picture'),
 
     path('payment/', payment_view, name='payment'),  # Renders payment_history.html
+
+    path('add_payment_account/', add_payment_account, name='add_payment_account'),  # Renders add_payment_account.html
+    path('add_or_update_account/', add_or_update_account),
+    path('delete_account/<int:id>/', delete_account),
+    path('get_all_accounts/',get_all_accounts),
 ]

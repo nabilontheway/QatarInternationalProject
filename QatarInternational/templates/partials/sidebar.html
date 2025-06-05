@@ -4,7 +4,7 @@
       <!--begin::Sidebar Brand-->
       <div class="sidebar-brand">
         <!--begin::Brand Link-->
-        <a href="./index.html" class="brand-link">
+        <a href="{% url 'dashboard' %}" class="brand-link">
           <!--begin::Brand Image-->
           <img
           src="{% static 'images/logo.png' %}"
@@ -115,6 +115,17 @@
                 <i class="nav-icon bi bi-card-image"></i>
                 <p>
                   Upload Gallery
+                 
+                </p>
+              </a>
+              
+            </li>
+             <li class="nav-item ">
+              <a href="{% url 'add_payment_account' %}" class="nav-link">
+                <i class="nav-icon bi bi-currency-dollar"></i>
+                
+                <p>
+                 Add Payment Account
                  
                 </p>
               </a>

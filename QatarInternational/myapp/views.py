@@ -14,8 +14,8 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from django.shortcuts import redirect
-
-from .models import Notice, Users, Student, PaymentHistory,GalleryPic
+from django.db.models import Sum
+from .models import Notice, Users, Student, PaymentHistory,GalleryPic,AccountNumber
 
 # Cloudinary config
 cloudinary.config(
@@ -27,11 +27,21 @@ cloudinary.config(
 # --- VIEWS START ---
 
 # Dashboard
+
+
 def dashboard_view(request):
     user_id = request.session.get('user_id')
     if user_id and request.session.get('role') == 'admin':
-        return render(request, 'dashboard.html', {'user_id': user_id, 'page_title': 'Dashboard'})    
+        total_students = Users.objects.filter(role='student').count()
+        total_ammount = PaymentHistory.objects.aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+        return render(request, 'dashboard.html', {
+            'user_id': user_id,
+            'page_title': 'Dashboard',
+            'total_students': total_students,
+            'total_ammount': total_ammount
+        })
     return render(request, 'login.html')
+
 
 def student_dashboard_view(request):
     user_id = request.session.get('user_id')
@@ -600,4 +610,52 @@ def delete_image(request, id):
 
 
 
- 
+def add_payment_account(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return render(request, 'login.html', {'message': 'Please log in to manage accounts.'})
+
+    user = Users.objects.filter(id=user_id).first()
+    if user and user.role == "admin":
+        return render(request, 'add_account.html', {'page_title': 'Add Account'})
+
+    return render(request, 'login.html', {'message': 'Unauthorized access. Admins only.'})
+
+
+@csrf_exempt
+def add_or_update_account(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        acc_id = data.get("id")
+        acc_type = data.get("acc_type")
+        number = data.get("number")
+
+        if acc_id:
+            try:
+                acc = AccountNumber.objects.get(id=acc_id)
+                acc.acc_type = acc_type
+                acc.number = number
+                acc.save()
+                return JsonResponse({"message": "Account updated successfully."})
+            except AccountNumber.DoesNotExist:
+                return JsonResponse({"message": "Account not found."}, status=404)
+        else:
+            AccountNumber.objects.create(acc_type=acc_type, number=number)
+            return JsonResponse({"message": "Account added successfully."})
+
+    return JsonResponse({"message": "Invalid request."}, status=400)
+
+@csrf_exempt
+def delete_account(request, id):
+    if request.method == "DELETE":
+        try:
+            acc = AccountNumber.objects.get(id=id)
+            acc.delete()
+            return JsonResponse({"message": "Account deleted."})
+        except AccountNumber.DoesNotExist:
+            return JsonResponse({"message": "Account not found."}, status=404)
+    return JsonResponse({"message": "Invalid method."}, status=405)
+
+def get_all_accounts(request):
+    accounts = AccountNumber.objects.all().values()
+    return JsonResponse({"accounts": list(accounts)})

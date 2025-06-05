@@ -1,0 +1,135 @@
+{% include "partials/header.html" %}
+
+<div class="container my-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Account Numbers</h4>
+    <button class="btn btn-primary btn-sm" onclick="openModal()">+ Add Account</button>
+  </div>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Number</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="accountTableBody"></tbody>
+  </table>
+</div>
+
+<!-- ✅ Notification Bar -->
+<div id="notificationBar" class="alert alert-success alert-dismissible fade show"
+     style="position: fixed; top: 20px; right: 20px; z-index: 1050; min-width: 250px; display: none;" role="alert">
+  <strong id="notifyMessage">Success!</strong>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="accountForm">
+      <div class="modal-header">
+        <h5 class="modal-title">Add/Edit Account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% csrf_token %}
+        <input type="hidden" id="accountId">
+        <div class="mb-3">
+          <label for="acc_type" class="form-label">Account Type</label>
+          <input type="text" class="form-control" id="acc_type" required>
+        </div>
+        <div class="mb-3">
+          <label for="number" class="form-label">Number</label>
+          <input type="text" class="form-control" id="number" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Save</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const modal = new bootstrap.Modal(document.getElementById('accountModal'));
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const showNotification = (message) => {
+      const bar = document.getElementById("notificationBar");
+      document.getElementById("notifyMessage").innerText = message;
+      bar.style.display = "block";
+      setTimeout(() => {
+        bar.style.display = "none";
+      }, 3000);
+    };
+
+    window.openModal = function (account = null) {
+      document.getElementById('accountId').value = account?.id || "";
+      document.getElementById('acc_type').value = account?.acc_type || "";
+      document.getElementById('number').value = account?.number || "";
+      modal.show();
+    }
+
+    function fetchAccounts() {
+      fetch("/get_all_accounts/")
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.getElementById("accountTableBody");
+          tbody.innerHTML = "";
+          data.accounts.forEach(account => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${account.acc_type}</td>
+                <td>${account.number}</td>
+                <td>
+                  <button class="btn btn-sm btn-info me-2" onclick='openModal(${JSON.stringify(account)})'>Edit</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteAccount(${account.id})">Delete</button>
+                </td>
+              </tr>`;
+          });
+        });
+    }
+
+    document.getElementById("accountForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const id = document.getElementById("accountId").value;
+      const acc_type = document.getElementById("acc_type").value.trim();
+      const number = document.getElementById("number").value.trim();
+
+      fetch("/add_or_update_account/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify({ id, acc_type, number })
+      })
+      .then(res => res.json())
+      .then(data => {
+        modal.hide();
+        fetchAccounts();
+        showNotification(data.message || "Saved successfully!");
+      });
+    });
+
+    window.deleteAccount = function (id) {
+      if (!confirm("Are you sure?")) return;
+      fetch(`/delete_account/${id}/`, {
+        method: "DELETE",
+        headers: { "X-CSRFToken": csrfToken }
+      })
+      .then(res => res.json())
+      .then(data => {
+        fetchAccounts();
+        showNotification(data.message || "Deleted successfully!");
+      });
+    }
+
+    fetchAccounts();
+  });
+</script>
+
+{% include "partials/footer.html" %}

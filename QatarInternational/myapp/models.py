@@ -65,3 +65,10 @@ class GalleryPic(models.Model):
 
     def __str__(self):
         return self.pic_url
+
+class AccountNumber(models.Model):
+    acc_type = models.CharField(max_length=50, help_text="e.g., bKash, Nagad, Bank")
+    number = models.CharField(max_length=50, help_text="Account number")
+
+    def __str__(self):
+        return f"{self.acc_type}: {self.number}"
